@@ -23,22 +23,25 @@ class RLM_REPL(RLM):
         model: str = "gpt-5",
         recursive_model: str = "gpt-5-mini",
         max_iterations: int = 20,
+        max_output_length: int = 500000,  # Increased from 100K to reduce truncation impact
         depth: int = 0,
     ):
         """
         Initialize RLM with REPL.
-        
+
         Args:
             api_key: API key for LLM provider
             model: Root LLM model name
             recursive_model: Sub-LLM model name for recursive calls
             max_iterations: Maximum number of root LLM iterations
+            max_output_length: Maximum length of REPL output before truncation
             depth: Current recursion depth (0 for root)
         """
         self.api_key = api_key
         self.model = model
         self.recursive_model = recursive_model
         self.max_iterations = max_iterations
+        self.max_output_length = max_output_length
         self.depth = depth
         
         # Initialize LLM client (will be imported from utils)
@@ -207,16 +210,16 @@ class RLM_REPL(RLM):
     def _execute_code(self, code: str) -> str:
         """Execute code in REPL and return formatted result."""
         result = self.repl_env.code_execution(code)
-        
+
         # Format result for display
         result_parts = []
-        
+
         if result.stdout:
             result_parts.append(f"\n{result.stdout}")
-        
+
         if result.stderr:
             result_parts.append(f"\nError: {result.stderr}")
-        
+
         # Show some key variables
         important_vars = {}
         for key, value in result.locals.items():
@@ -229,17 +232,19 @@ class RLM_REPL(RLM):
                             important_vars[key] = repr(value)
                 except:
                     important_vars[key] = f"<{type(value).__name__}>"
-        
+
         if important_vars:
             result_parts.append(f"\nREPL variables: {list(important_vars.keys())}")
-        
+
         formatted = "\n".join(result_parts) if result_parts else "No output"
-        
-        # Truncate if too long
-        max_length = 100000
+
+        # Truncate if too long - configurable truncation to align with paper
+        # The paper mentions truncated outputs but doesn't specify length
+        # Using a larger value to reduce impact on long outputs
+        max_length = getattr(self, 'max_output_length', 500000)  # Default to 500K characters
         if len(formatted) > max_length:
-            formatted = formatted[:max_length] + "..."
-        
+            formatted = formatted[:max_length] + f"... [truncated from {len(formatted)} chars]"
+
         return formatted
     
     def _process_code_execution(self, response: str) -> List[Dict[str, str]]:
@@ -404,33 +409,27 @@ class RLM_REPL(RLM):
                             )
                             return actual_answer
         
-        # If no final answer after max iterations, force one
-        from rlm.utils.prompts import next_action_prompt
-        final_prompt = next_action_prompt(query, self.max_iterations, final_answer=True)
-        self.messages.append(final_prompt)
+        # If no final answer after max iterations, return None to indicate timeout
+        # This aligns better with the paper's approach of natural convergence
+        print(f"Warning: RLM reached max iterations ({self.max_iterations}) without finding a final answer.")
 
-        response, cost_info = self.llm.completion_with_cost(self.messages)
-        self._root_llm_cost += cost_info['cost']
-        self._root_llm_tokens += cost_info['tokens']
-        self._root_llm_calls += 1
-
-        # Log the final response
+        # Log the timeout
         tracer.log_turn(
             iteration=self.max_iterations,
             messages=self.messages,
-            response=response,
+            response="",
             code_blocks=[],
             execution_results=[],
-            final_answer=response,
+            final_answer=None,
             repl_state={
                 'context_loaded': 'context' in (self.repl_env.locals if self.repl_env else {}),
                 'local_vars': list(self.repl_env.locals.keys()) if self.repl_env else [],
                 'globals': list(self.repl_env.globals.keys()) if self.repl_env else []
             } if self.repl_env else {},
-            cost_info=cost_info
+            cost_info={'cost': 0, 'tokens': 0}
         )
 
-        return response
+        return None
     
     def cost_summary(self) -> Dict[str, Any]:
         """Get cost summary for this completion."""

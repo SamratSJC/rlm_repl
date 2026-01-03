@@ -75,12 +75,18 @@ This implementation provides Recursive Language Model (RLM) system that allows L
 - Automatic model selection from available models endpoint
 - Default fallback to `http://localhost:8080/v1`
 
+### Improved Configuration Options
+- `max_iterations`: Maximum number of root LLM iterations before timeout (default: 20)
+- `max_output_length`: Maximum length of REPL output before truncation (default: 500,000 chars)
+- When max iterations reached, returns None instead of forcing an answer to align with paper's natural convergence
+- Increased output length limit to reduce impact on long-output tasks
+
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd <repository-name>
+git clone https://github.com/fullstackwebdev/rlm_repl
+cd rlm_repl
 ```
 
 2. Install dependencies (if any):
@@ -136,7 +142,8 @@ from rlm.rlm_repl import RLM_REPL
 rlm = RLM_REPL(
     model="Qwen3-Coder-REAP-25B-A3B.Q5_K_M.gguf",
     recursive_model="Qwen3-Coder-REAP-25B-A3B.Q5_K_M.gguf",
-    max_iterations=10
+    max_iterations=10,
+    max_output_length=500000  # Characters before truncation
 )
 
 # Process long context
@@ -144,19 +151,13 @@ result = rlm.completion(
     context="Very long context...",
     query="What is the answer to the question?"
 )
+
+# Note: result may be None if max_iterations reached without finding final answer
+if result is None:
+    print("RLM reached max iterations without finding a final answer")
+else:
+    print(f"Result: {result}")
 ```
-
-## Paper Compliance
-
-This implementation faithfully reproduces the key innovations from the RLM paper:
-
-1. **External Context Treatment**: Context is stored as an external variable in the REPL environment rather than being fed directly to the neural network.
-
-2. **Programmatic Interaction**: LLMs can write code to peek into, decompose, and recursively call themselves over programmatic snippets of the context.
-
-3. **Recursive Self-Calling**: The system enables the LLM to invoke itself recursively on smaller chunks of the context.
-
-4. **Scalability**: The system can handle inputs orders of magnitude beyond model context windows.
 
 
 ## Performance Characteristics
@@ -165,62 +166,6 @@ This implementation faithfully reproduces the key innovations from the RLM paper
 - Comparable or better quality than base LLMs and common long-context scaffolds
 - Comparable or cheaper cost per query compared to alternatives
 - Maintains strong performance as context length and task complexity increase
-
-## Issues and Solutions
-
-### String Formatting Issue with Curly Braces
-**Problem**: The system prompt contained code examples with `{chunk}` placeholders, which Python's `.format()` method interpreted as format placeholders, causing a KeyError when trying to format the prompt.
-
-**Solution**: Escaped all curly braces in the code examples within the system prompt by doubling them (`{{` and `}}`) so they wouldn't be interpreted as format placeholders.
-
-### Infinite Loop in RLM Execution
-**Problem**: The RLM was getting stuck in an infinite loop, continuously generating code blocks without reaching a final answer.
-
-**Solution**: Added proper termination condition checking in the main iteration loop to detect when a final answer was found in the REPL environment variables.
-
-### Local Model Compatibility Issues
-**Problem**: The local model wasn't following the instructions as well as expected, often generating empty responses or not using code blocks effectively.
-
-**Solution**: Adjusted the system prompts to be more explicit and reduced the complexity of test cases to better match the capabilities of the local model.
-
-### Context Loading and Type Handling
-**Problem**: The `_convert_context` method could return both `context_data` and `context_str` as non-None values, causing the second one to overwrite the first in the REPL environment.
-
-**Solution**: Ensured the `_convert_context` method properly returns only one of them as non-None based on the input type.
-
-### Cost Tracking Implementation
-**Problem**: The local model API doesn't provide detailed token usage, making accurate cost tracking difficult.
-
-**Solution**: Implemented estimated cost calculation based on character counts with configurable pricing per model.
-
-### Code Execution Security and State Management
-**Problem**: The REPL environment needed to securely execute user-generated code while maintaining state across iterations.
-
-**Solution**: Created a restricted execution environment with a safe set of built-ins and proper state isolation.
-
-### Model Response Parsing
-**Problem**: The system needed to reliably extract code blocks and final answers from model responses, but responses varied in format.
-
-**Solution**: Used robust regex patterns and multiple parsing strategies to handle different response formats.
-
-### API URL Configuration and Model Selection
-**Problem**: The API URL was hardcoded and the model had to be specified manually, making it difficult to switch between different endpoints or automatically select available models.
-
-**Solution**: Added support for environment variable configuration of the API URL with a default fallback, and implemented automatic model selection from the available models endpoint.
-
-## Architecture
-
-### External Context Storage
-Storing context as an external variable in REPL rather than passing to model directly allows handling of arbitrarily long contexts.
-
-### Two-Tier Architecture
-Separating root LLM from sub-LLMs allows for different models at different levels of recursion.
-
-### Message-Based Communication
-Using structured messages between iterations maintains conversation history and context.
-
-### Modular Design
-Separating concerns into RLM base class, REPL environment, and utility functions enables reuse and testing.
 
 
 ## References

@@ -23,7 +23,10 @@ def test_simple():
             context=context,
             query="What is the magic number in the context?"
         )
-        print(f"Result: {result}")
+        if result is None:
+            print("Result: RLM reached max iterations without finding a final answer.")
+        else:
+            print(f"Result: {result}")
     except Exception as e:
         print(f"Error: {e}")
         import traceback
