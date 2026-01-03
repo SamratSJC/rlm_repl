@@ -1,3 +1,4 @@
-./rlm-minimal
-./logs
-./_old
+rlm-minimal
+logs
+_old
+__pycache__
